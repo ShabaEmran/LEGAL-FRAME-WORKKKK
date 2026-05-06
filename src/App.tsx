@@ -1,6 +1,6 @@
 import { motion, AnimatePresence } from "motion/react";
 import { Edit2, Lock, Trophy, ListOrdered, Package, Gift, ShieldCheck } from "lucide-react";
-import { useState, ReactNode } from "react";
+import { useState, ReactNode, memo, useMemo, useCallback } from "react";
 
 /**
  * @license
@@ -45,7 +45,7 @@ const CAMPAIGN_STYLES: CampaignStyleContent[] = [
 
 const PREFIX = "This promotion is operated by [Merchant Legal Name], trading as [Merchant Trading Name] (“the Promoter”), using the Playe platform. Entry may require a qualifying purchase and successful gameplay participation as defined within the campaign settings. No purchase is necessary where a free entry route is available. Prizes are non-transferable and no cash alternative is offered. The Promoter reserves the right to amend, suspend, or withdraw the campaign where necessary for legal, technical, or operational reasons. Personal data will be processed in accordance with applicable UK data protection laws for campaign administration, prize fulfilment, and fraud prevention purposes.";
 
-function Tooltip({ children }: { children: string }) {
+const Tooltip = memo(function Tooltip({ children }: { children: string }) {
   return (
     <motion.div
       initial={{ opacity: 0, y: 5 }}
@@ -57,10 +57,10 @@ function Tooltip({ children }: { children: string }) {
       {children}
     </motion.div>
   );
-}
+});
 
-function HighlightedText({ text, isEditable, disableHighlight }: { text: string; isEditable: boolean; disableHighlight?: boolean }) {
-  const parts = text.split(/(\[.*?\])/g);
+const HighlightedText = memo(function HighlightedText({ text, isEditable, disableHighlight }: { text: string; isEditable: boolean; disableHighlight?: boolean }) {
+  const parts = useMemo(() => text.split(/(\[.*?\])/g), [text]);
   return (
     <>
       {parts.map((part, i) => {
@@ -78,9 +78,9 @@ function HighlightedText({ text, isEditable, disableHighlight }: { text: string;
       })}
     </>
   );
-}
+});
 
-function EditableText({ 
+const EditableText = memo(function EditableText({ 
   children, 
   value: initialValue,
   onSave,
@@ -101,6 +101,25 @@ function EditableText({
   const [isEditing, setIsEditing] = useState(false);
   const [value, setValue] = useState(initialValue || "");
 
+  const handleSave = useCallback(() => {
+    onSave?.(value);
+    setIsEditing(false);
+  }, [onSave, value]);
+
+  const handleCancel = useCallback(() => {
+    setIsEditing(false);
+  }, []);
+
+  const handleEditTrigger = useCallback((e: React.MouseEvent) => {
+    if (isEditable) {
+      e.stopPropagation();
+      setIsEditing(true);
+    }
+  }, [isEditable]);
+
+  const handleMouseEnter = useCallback(() => setIsHovered(true), []);
+  const handleMouseLeave = useCallback(() => setIsHovered(false), []);
+
   if (isEditing && isEditable) {
     return (
       <div className="inline-block w-full my-4 p-5 rounded-2xl bg-white/[0.04] border border-white/10 animate-in fade-in zoom-in-95 duration-150">
@@ -112,16 +131,13 @@ function EditableText({
         />
         <div className="mt-4 flex justify-end gap-3">
           <button
-            onClick={() => setIsEditing(false)}
+            onClick={handleCancel}
             className="px-4 py-2 rounded-xl bg-white/5 hover:bg-white/10 text-[11px] font-bold tracking-widest uppercase text-white/40 transition-colors"
           >
             Cancel
           </button>
           <button
-            onClick={() => {
-              onSave?.(value);
-              setIsEditing(false);
-            }}
+            onClick={handleSave}
             className="px-4 py-2 rounded-xl bg-white text-black hover:bg-neutral-200 text-[11px] font-bold tracking-widest uppercase transition-colors shadow-lg"
           >
             Save Changes
@@ -136,14 +152,9 @@ function EditableText({
 
   return (
     <motion.span
-      onMouseEnter={() => setIsHovered(true)}
-      onMouseLeave={() => setIsHovered(false)}
-      onClick={(e) => {
-        if (isEditable) {
-          e.stopPropagation();
-          setIsEditing(true);
-        }
-      }}
+      onMouseEnter={handleMouseEnter}
+      onMouseLeave={handleMouseLeave}
+      onClick={handleEditTrigger}
       animate={{
         color: (isHovered && isEditable) 
           ? "rgba(255, 255, 255, 0.85)" 
@@ -164,7 +175,7 @@ function EditableText({
       {children || (initialValue ? <HighlightedText text={initialValue} isEditable={isEditable} disableHighlight={disableHighlight} /> : null)}
     </motion.span>
   );
-}
+});
 
 const DEFAULT_NOTE = "[Add optional customer-facing notes for exclusions, qualifying products, or collection instructions here.]";
 
@@ -173,8 +184,17 @@ export default function App() {
   const [merchantNote, setMerchantNote] = useState(DEFAULT_NOTE);
   const [isExpanded, setIsExpanded] = useState(false);
   
-  const current = CAMPAIGN_STYLES.find(s => s.id === activeStyle)!;
-  const hasChanges = merchantNote !== DEFAULT_NOTE;
+  const current = useMemo(() => CAMPAIGN_STYLES.find(s => s.id === activeStyle)!, [activeStyle]);
+  const hasChanges = useMemo(() => merchantNote !== DEFAULT_NOTE, [merchantNote]);
+
+  const handleExpand = useCallback(() => {
+    if (!isExpanded) setIsExpanded(true);
+  }, [isExpanded]);
+
+  const handleSaveApp = useCallback((e: React.MouseEvent) => {
+    e.stopPropagation();
+    // Logic for global save
+  }, []);
 
   return (
     <div className="min-h-screen bg-black text-white font-sans flex flex-col p-12 pt-24 selection:bg-white/10">
@@ -193,7 +213,7 @@ export default function App() {
           animate={{ 
             height: isExpanded ? "auto" : "520px",
           }}
-          onClick={() => !isExpanded && setIsExpanded(true)}
+          onClick={handleExpand}
           className={`relative rounded-[2.5rem] bg-[#0c0d0e] border border-white/[0.05] shadow-[0_32px_64px_-16px_rgba(0,0,0,0.8)] overflow-hidden transition-all duration-700 ease-in-out ${!isExpanded ? 'cursor-pointer hover:border-white/10' : ''}`}
         >
           {/* Card Context Padding */}
@@ -311,7 +331,7 @@ export default function App() {
                     exit={{ scale: 0, opacity: 0 }}
                     whileHover={{ scale: 1.05 }}
                     whileTap={{ scale: 0.95 }}
-                    onClick={(e) => e.stopPropagation()}
+                    onClick={handleSaveApp}
                     className="px-6 py-2.5 rounded-xl bg-white text-black font-bold text-[10px] tracking-[0.15em] uppercase shadow-xl"
                   >
                     Save
