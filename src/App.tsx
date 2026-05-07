@@ -211,13 +211,13 @@ export default function App() {
           layout
           initial={false}
           animate={{ 
-            height: isExpanded ? "auto" : "520px",
+            height: isExpanded ? "auto" : "500px",
           }}
           onClick={handleExpand}
           className={`relative rounded-[2.5rem] bg-[#0c0d0e] border border-white/[0.05] shadow-[0_32px_64px_-16px_rgba(0,0,0,0.8)] overflow-hidden transition-all duration-700 ease-in-out ${!isExpanded ? 'cursor-pointer hover:border-white/10' : ''}`}
         >
           {/* Card Context Padding */}
-          <div className="p-14 pb-32">
+          <div className="p-14 pb-12">
             {/* Disclaimer Header Section */}
             <div className="mb-10">
               <h2 className="text-[10px] font-black tracking-[0.25em] text-white/30 uppercase font-mono mb-2">
@@ -256,12 +256,11 @@ export default function App() {
                       initial={{ opacity: 0, height: 0 }}
                       animate={{ opacity: 1, height: "auto" }}
                       exit={{ opacity: 0, height: 0 }}
-                      className="mt-6"
                     >
                       <EditableText 
                         value={merchantNote} 
                         onSave={setMerchantNote}
-                        tooltipLabel="Click to manage campaign-specific terms"
+                        tooltipLabel="PROVIDE ADDITIONAL CONTEXT"
                         isSubtle
                         disableHighlight
                       />
@@ -274,20 +273,20 @@ export default function App() {
 
           {/* Reveal Overlay when collapsed */}
           {!isExpanded && (
-            <div className="absolute inset-x-0 bottom-[108px] h-64 bg-gradient-to-t from-[#0c0d0e] via-[#0c0d0e]/95 to-transparent pointer-events-none flex flex-col items-center justify-end pb-10 gap-4 translate-y-1">
+            <div className="absolute inset-x-0 bottom-[100px] h-64 bg-gradient-to-t from-[#0c0d0e] via-[#0c0d0e]/95 to-transparent pointer-events-none flex flex-col items-center justify-end pb-12 gap-4">
               <motion.div
-                animate={{ scale: [1, 1.2, 1], opacity: [0.2, 0.5, 0.2] }}
+                animate={{ scale: [1, 1.2, 1], opacity: [0.15, 0.4, 0.15] }}
                 transition={{ duration: 2.5, repeat: Infinity, ease: "easeInOut" }}
-                className="w-2 h-2 rounded-full bg-white shadow-[0_0_15px_rgba(255,255,255,0.4)]"
+                className="w-2 h-2 rounded-full bg-white shadow-[0_0_15px_rgba(255,255,255,0.3)]"
               />
-              <span className="text-[10px] font-black tracking-[0.4em] text-white/15 uppercase transition-opacity">Click to View full context</span>
+              <span className="text-[10px] font-black tracking-[0.4em] text-white/10 uppercase transition-opacity">Click to View full context</span>
             </div>
           )}
 
           {/* Screenshot-Style Bottom Controller */}
-          <div className="px-10 py-8 border-t border-white/[0.03] bg-white/[0.01] flex items-center justify-center relative">
+          <div className="px-10 py-7 border-t border-white/[0.04] bg-white/[0.015] flex items-center justify-center relative backdrop-blur-3xl">
             {/* Center: Campaign Style Toggles */}
-            <div className="flex bg-white/[0.03] p-1.5 rounded-2xl border border-white/5">
+            <div className="flex bg-white/[0.03] p-1.5 rounded-2xl border border-white/5 shadow-inner">
               {CAMPAIGN_STYLES.map((style) => (
                 <button
                   key={style.id}
@@ -295,9 +294,9 @@ export default function App() {
                     e.stopPropagation();
                     setActiveStyle(style.id);
                   }}
-                  className={`relative p-2 rounded-xl transition-all duration-100 group/btn ${
+                  className={`relative p-2.5 rounded-xl transition-all duration-100 group/btn ${
                     activeStyle === style.id
-                      ? "bg-white/10 text-white shadow-xl"
+                      ? "text-white"
                       : "text-white/20 hover:text-white/50"
                   }`}
                 >
@@ -306,15 +305,15 @@ export default function App() {
                     {activeStyle === style.id && (
                       <motion.div
                         layoutId="active-pill"
-                        className="absolute inset-0 bg-white/5 rounded-xl -z-10"
-                        transition={{ type: "spring", bounce: 0.1, duration: 0.2 }}
+                        className="absolute inset-0 bg-white/10 border border-white/10 rounded-xl -z-10 shadow-lg shadow-black/20"
+                        transition={{ type: "spring", bounce: 0.15, duration: 0.4 }}
                       />
                     )}
                   </AnimatePresence>
                   
-                  <div className="absolute top-full mt-3 left-1/2 -translate-x-1/2 opacity-0 group-hover/btn:opacity-100 transition-opacity pointer-events-none z-50">
-                    <div className="px-2.5 py-1.5 rounded-lg bg-white/15 backdrop-blur-md border border-white/10 shadow-2xl whitespace-nowrap">
-                      <span className="text-[9px] font-black tracking-widest uppercase text-white/90">{style.label}</span>
+                  <div className="absolute top-full mt-4 left-1/2 -translate-x-1/2 opacity-0 group-hover/btn:opacity-100 transition-all duration-200 pointer-events-none z-50 translate-y-1 group-hover/btn:translate-y-0">
+                    <div className="px-3 py-1.5 rounded-xl bg-[#1a1b1c] border border-white/10 shadow-2xl whitespace-nowrap">
+                      <span className="text-[9px] font-black tracking-widest uppercase text-white/80">{style.label}</span>
                     </div>
                   </div>
                 </button>
@@ -322,17 +321,17 @@ export default function App() {
             </div>
 
             {/* Right: Save Trigger - Absolute Positioned */}
-            <div className="absolute right-10">
+            <div className="absolute right-10 flex items-center">
               <AnimatePresence>
                 {hasChanges && (
                   <motion.button
-                    initial={{ scale: 0, opacity: 0 }}
-                    animate={{ scale: 1, opacity: 1 }}
-                    exit={{ scale: 0, opacity: 0 }}
-                    whileHover={{ scale: 1.05 }}
+                    initial={{ scale: 0.8, opacity: 0, x: 20 }}
+                    animate={{ scale: 1, opacity: 1, x: 0 }}
+                    exit={{ scale: 0.8, opacity: 0, x: 20 }}
+                    whileHover={{ scale: 1.05, backgroundColor: "#f3f4f6" }}
                     whileTap={{ scale: 0.95 }}
                     onClick={handleSaveApp}
-                    className="px-6 py-2.5 rounded-xl bg-white text-black font-bold text-[10px] tracking-[0.15em] uppercase shadow-xl"
+                    className="px-6 py-2.5 rounded-xl bg-white text-black font-bold text-[10px] tracking-[0.15em] uppercase shadow-2xl shadow-white/5 transition-colors"
                   >
                     Save
                   </motion.button>
